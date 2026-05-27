@@ -1,6 +1,8 @@
 """Config flow for the Himoinsa C4LAN integration."""
 from __future__ import annotations
 
+import asyncio
+import logging
 from typing import Any
 
 import voluptuous as vol
@@ -27,6 +29,9 @@ from .const import (
     DOMAIN,
     INPUT_REG_START,
 )
+from .coordinator import async_read
+
+_LOGGER = logging.getLogger(__name__)
 
 
 async def _test_connection(host: str, port: int, slave: int) -> str | None:
@@ -35,11 +40,15 @@ async def _test_connection(host: str, port: int, slave: int) -> str | None:
     try:
         if not await client.connect():
             return "cannot_connect"
-        result = await client.read_input_registers(INPUT_REG_START, count=1, slave=slave)
+        result = await async_read(client.read_input_registers, INPUT_REG_START, 1, slave)
         if result.isError():
             return "invalid_response"
-    except ModbusException:
+    except (ModbusException, asyncio.TimeoutError, OSError) as err:
+        _LOGGER.warning("C4LAN connection test failed: %s", err)
         return "cannot_connect"
+    except Exception:  # noqa: BLE001 - surface as a clean error instead of "unknown"
+        _LOGGER.exception("Unexpected error testing C4LAN connection")
+        return "unknown"
     finally:
         client.close()
     return None

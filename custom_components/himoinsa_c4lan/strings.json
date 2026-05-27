@@ -14,7 +14,8 @@
     },
     "error": {
       "cannot_connect": "Failed to connect to the device.",
-      "invalid_response": "Connected, but the device did not return valid data."
+      "invalid_response": "Connected, but the device did not return valid data.",
+      "unknown": "Unexpected error. Check the Home Assistant log for details."
     },
     "abort": {
       "already_configured": "This device is already configured."

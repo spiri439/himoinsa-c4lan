@@ -23,6 +23,19 @@ from .const import (
 _LOGGER = logging.getLogger(__name__)
 
 
+async def async_read(method, address: int, count: int, slave: int):
+    """Call a pymodbus read method, tolerating the slave/device_id rename.
+
+    pymodbus renamed the ``slave`` keyword to ``device_id`` in newer releases;
+    Home Assistant may ship either. Try ``slave`` first, fall back to
+    ``device_id`` if that signature is rejected.
+    """
+    try:
+        return await method(address, count=count, slave=slave)
+    except TypeError:
+        return await method(address, count=count, device_id=slave)
+
+
 class HimoinsaCoordinator(DataUpdateCoordinator[dict]):
     """Polls the C4LAN device and exposes registers + coils to entities."""
 
@@ -54,14 +67,15 @@ class HimoinsaCoordinator(DataUpdateCoordinator[dict]):
         try:
             # Live telemetry block (addresses 7..31). Addresses 0..6 are
             # grid-only and would fail the whole read, so we start at 7.
-            regs = await self._client.read_input_registers(
-                INPUT_REG_START, count=INPUT_REG_COUNT, slave=self._slave
+            regs = await async_read(
+                self._client.read_input_registers,
+                INPUT_REG_START, INPUT_REG_COUNT, self._slave,
             )
             if regs.isError():
                 raise UpdateFailed(f"Input register read error: {regs}")
 
-            coils = await self._client.read_coils(
-                COIL_START, count=COIL_COUNT, slave=self._slave
+            coils = await async_read(
+                self._client.read_coils, COIL_START, COIL_COUNT, self._slave
             )
             if coils.isError():
                 raise UpdateFailed(f"Coil read error: {coils}")
@@ -71,8 +85,8 @@ class HimoinsaCoordinator(DataUpdateCoordinator[dict]):
             }
 
             # Engine hours sits outside the main block; best-effort.
-            hours = await self._client.read_input_registers(
-                ENGINE_HOURS_ADDR, count=1, slave=self._slave
+            hours = await async_read(
+                self._client.read_input_registers, ENGINE_HOURS_ADDR, 1, self._slave
             )
             if not hours.isError():
                 registers[ENGINE_HOURS_ADDR] = hours.registers[0]
