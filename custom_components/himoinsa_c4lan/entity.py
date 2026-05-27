@@ -18,7 +18,7 @@ class HimoinsaEntity(CoordinatorEntity[HimoinsaCoordinator]):
         self._attr_unique_id = f"{entry_id}_{key}"
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, entry_id)},
-            name="Himoinsa C4LAN Generator",
-            manufacturer="Himoinsa",
-            model="C4LAN",
+            name="C4LAN Generator",
+            manufacturer="spiri439",
+            model="C4LAN for Himoinsa",
         )
