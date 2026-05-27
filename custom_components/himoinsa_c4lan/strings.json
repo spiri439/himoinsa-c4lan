@@ -1,0 +1,33 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Himoinsa C4LAN Generator",
+        "description": "Connect to the C4LAN MODBUS device over Modbus TCP.",
+        "data": {
+          "host": "Host / IP address",
+          "port": "Port",
+          "slave": "Slave/unit ID",
+          "scan_interval": "Scan interval (seconds)"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Failed to connect to the device.",
+      "invalid_response": "Connected, but the device did not return valid data."
+    },
+    "abort": {
+      "already_configured": "This device is already configured."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Options",
+        "data": {
+          "scan_interval": "Scan interval (seconds)"
+        }
+      }
+    }
+  }
+}

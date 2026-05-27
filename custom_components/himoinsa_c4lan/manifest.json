@@ -1,0 +1,12 @@
+{
+  "domain": "himoinsa_c4lan",
+  "name": "Himoinsa C4LAN Generator",
+  "codeowners": ["@spiri439"],
+  "config_flow": true,
+  "documentation": "https://github.com/spiri439/himoinsa-c4lan",
+  "integration_type": "device",
+  "iot_class": "local_polling",
+  "issue_tracker": "https://github.com/spiri439/himoinsa-c4lan/issues",
+  "requirements": ["pymodbus>=3.6.0"],
+  "version": "1.0.0"
+}
