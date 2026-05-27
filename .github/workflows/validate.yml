@@ -16,9 +16,6 @@ jobs:
       - uses: hacs/action@main
         with:
           category: integration
-          # 'brands' requires the domain to be in home-assistant/brands, which is
-          # only needed for the HACS default store. Skip it for custom-repo use.
-          ignore: brands
 
   hassfest:
     name: Hassfest validation
