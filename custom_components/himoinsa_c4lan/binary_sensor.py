@@ -9,6 +9,7 @@ from homeassistant.components.binary_sensor import (
     BinarySensorEntityDescription,
 )
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
@@ -67,10 +68,12 @@ async def async_setup_entry(
 ) -> None:
     """Set up Himoinsa binary sensors from a config entry."""
     coordinator: HimoinsaCoordinator = hass.data[DOMAIN][entry.entry_id]
-    async_add_entities(
+    entities: list[BinarySensorEntity] = [
         HimoinsaBinarySensor(coordinator, entry.entry_id, description)
         for description in BINARY_SENSORS
-    )
+    ]
+    entities.append(HimoinsaConnectionSensor(coordinator, entry.entry_id))
+    async_add_entities(entities)
 
 
 class HimoinsaBinarySensor(HimoinsaEntity, BinarySensorEntity):
@@ -90,3 +93,27 @@ class HimoinsaBinarySensor(HimoinsaEntity, BinarySensorEntity):
     @property
     def is_on(self) -> bool | None:
         return self.coordinator.data["coils"].get(self.entity_description.coil)
+
+
+class HimoinsaConnectionSensor(HimoinsaEntity, BinarySensorEntity):
+    """Connectivity sensor: on = device reachable, off = polling failed.
+
+    Unlike the other entities, this stays *available* when the device drops,
+    so it reports 'off' instead of becoming unavailable — which makes it
+    usable as a reliable trigger for a 'connection lost' notification.
+    """
+
+    _attr_device_class = BinarySensorDeviceClass.CONNECTIVITY
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+    _attr_name = "Connection"
+
+    def __init__(self, coordinator: HimoinsaCoordinator, entry_id: str) -> None:
+        super().__init__(coordinator, entry_id, "connection")
+
+    @property
+    def available(self) -> bool:
+        return True
+
+    @property
+    def is_on(self) -> bool:
+        return self.coordinator.last_update_success
